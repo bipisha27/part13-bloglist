@@ -3,19 +3,22 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 
-const { sequelize } = require('./util/db')
+const { syncModels } = require('./models')
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
-const {errorHandler} = require('./util/middleware')
+const { errorHandler } = require('./util/middleware')
 const authorsRouter = require('./controllers/authors')
-
 const testingRouter = require('./controllers/testing')
 
-if(process.env.NODE_ENV === 'test' || process.env.TESTING === 'true')
+if (process.env.NODE_ENV === 'test' || process.env.TESTING === 'true')
   app.use('/api', testingRouter)
 
 app.use(express.json())
+
+app.get('/', (req, res) => {
+  res.status(200).send('pong')
+})
 
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
@@ -26,10 +29,11 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+const start = async () => {
+  await syncModels()
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+  })
+}
 
-app.get('/', (req, res) => {
-  res.status(200).send('pong')
-})
+start()
