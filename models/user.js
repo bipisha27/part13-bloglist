@@ -1,8 +1,6 @@
 const {Model, DataTypes} = require('sequelize')
 const {sequelize} = require('../util/db')
-
 class User extends Model {}
-
 User.init({
   name: {
     type: DataTypes.TEXT,
@@ -17,6 +15,10 @@ User.init({
         msg: 'username must be a valid email address'
       }
     }
+  },
+  passwordHash: {
+    type: DataTypes.TEXT,
+    allowNull: false
   }
  },{
     sequelize,
@@ -24,5 +26,4 @@ User.init({
     modelName: 'user'
   }
 )
-
-module.exports = User 
+module.exports = User

@@ -1,8 +1,10 @@
+const bcrypt = require('bcrypt')
 const router = require('express').Router()
 const {User, Blog} = require('../models')
 
 router.get('/', async(req, res) => {
   const users = await User.findAll({
+    attributes: { exclude: ['passwordHash'] },
     include: {
       model: Blog,
       attributes: {
@@ -15,8 +17,16 @@ router.get('/', async(req, res) => {
 
 router.post('/', async(req, res, next) => {
   try{
-    const {username, name} = req.body
-    const user = await User.create({username, name})
+    const {username, name, password} = req.body
+
+    if (!password || password.length < 3) {
+      return res.status(400).json({ error: 'password must be at least 3 characters long' })
+    }
+
+    const saltRounds = 10
+    const passwordHash = await bcrypt.hash(password, saltRounds)
+
+    const user = await User.create({ username, name, passwordHash })
     res.json(user)
   } catch(error) {
     next(error)
@@ -40,4 +50,4 @@ router.put('/:username', async(req, res, next) => {
   }
 })
 
-module.exports = router 
+module.exports = router
