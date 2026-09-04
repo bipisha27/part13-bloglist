@@ -1,19 +1,39 @@
-require('dotenv').config()
-const { Sequelize } = require('sequelize')
-
-const isTest = process.env.TESTING === 'true'
-
-const DATABASE_URL = isTest
-  ? process.env.TEST_DATABASE_URL
-  : process.env.DATABASE_URL
+const Sequelize = require('sequelize')
+const { DATABASE_URL } = require('./config')
+const { Umzug, SequelizeStorage } = require('umzug')
 
 const sequelize = new Sequelize(DATABASE_URL, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false 
+      rejectUnauthorized: false
     }
-  }
+  },
 })
 
-module.exports = { sequelize }
+const runMigrations = async () => {
+  const migrator = new Umzug({
+    migrations: { glob: 'migrations/*.js' },
+    storage: new SequelizeStorage({ sequelize, tableName: 'migrations' }),
+    context: sequelize.getQueryInterface(),
+    logger: console
+  })
+  const migrations = await migrator.up()
+  console.log('Migrations up to date', {
+    files: migrations.map((mig) => mig.name),
+  })
+}
+
+const connectToDatabase = async () => {
+  try {
+    await sequelize.authenticate()
+    await runMigrations()
+    console.log('connected to the database')
+  } catch (err) {
+    console.log('failed to connect to the database')
+    console.log(err)
+    return process.exit(1)
+  }
+}
+
+module.exports = { connectToDatabase, sequelize }

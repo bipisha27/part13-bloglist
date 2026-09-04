@@ -3,7 +3,8 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 
-const { syncModels } = require('./models')
+const {connectToDatabase} = require('./util/db')
+
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
@@ -30,7 +31,7 @@ app.use(errorHandler)
 const PORT = process.env.PORT || 3001
 
 const start = async () => {
-  await syncModels()
+  await connectToDatabase()
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
   })
