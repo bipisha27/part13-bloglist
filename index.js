@@ -11,6 +11,8 @@ const loginRouter = require('./controllers/login')
 const { errorHandler } = require('./util/middleware')
 const authorsRouter = require('./controllers/authors')
 const testingRouter = require('./controllers/testing')
+const readingListsRouter = require('./controllers/readinglists')
+const logoutRouter = require('./controllers/logout')
 
 if (process.env.NODE_ENV === 'test' || process.env.TESTING === 'true')
   app.use('/api', testingRouter)
@@ -25,6 +27,8 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/authors', authorsRouter)
+app.use('/api/readinglists', readingListsRouter)
+app.use('/api/logout', logoutRouter)
 
 app.use(errorHandler)
 

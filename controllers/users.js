@@ -50,4 +50,35 @@ router.put('/:username', async(req, res, next) => {
   }
 })
 
+router.get('/:id', async (req, res) => {
+  const throughWhere = {}
+
+  if(req.query.read === 'true') {
+    throughWhere.read = true
+  }
+
+  if(req.query.read === 'false') {
+    throughWhere.read = false 
+  }
+
+  const user = await User.findByPk(req.params.id, {
+    attributes: { exclude: ['passwordHash'] },
+    include: {
+      model: Blog,
+      as: 'readings',
+      attributes: { exclude: ['userId'] },
+      through: {
+        attributes: ['read', 'id'],
+        where: throughWhere
+      }
+    }
+  })
+
+  if (user) {
+    res.json(user)
+  } else {
+    res.status(404).end()
+  }
+})
+
 module.exports = router
